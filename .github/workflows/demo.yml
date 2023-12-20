@@ -1,0 +1,47 @@
+name: Demo Test
+
+on:
+   push:
+       branches:
+         -main
+         -stage1
+         #pull_request:
+         #branches:
+         #-main
+         #schedule:
+         #-cron:'30 14 * *  MON-FRI'
+         jobs:
+         build:
+         runs-on: windwos-latest
+
+         steps:
+           -name: Checkout to repository
+            uses: actions/checkout-java@v3
+
+            -name: Download and Setup JDK
+             uses: actions/setup-java@v3
+             with:
+               java-version: '21'
+               distributor: 'temurin'
+               continue-on-error: true
+              -name: Download and Setup Maven
+              uses: stCarolas/setup-maven@v4.4
+              with:
+                maven-version: 3.8.2
+              -name: Build using Maven
+               run: mvn clean install
+            test:
+              needs: build
+                 steps:
+                   -name: Run Test
+                    run: mvn test "-Dcucumber.filter.tags=@smoke"
+                    env:
+                      DISPLAY:  :19
+                      CUCUMBER_PUBLISH_TOKEN: 19ab4683-e3a8-4e52-b8fb-3a77328d56ab
+                      continue-on-error: true
+                  -uses: actions/upload-artifact@v3
+                  if: always()
+                  with: 
+                    name: Report
+                    path: test-output
+                    retention-days: 30
